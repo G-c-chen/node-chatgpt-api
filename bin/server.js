@@ -95,6 +95,13 @@ server.post('/conversation', async (request, reply) => {
             );
             break;
     }
+    const abortController = new AbortController();
+
+    reply.raw.on('close', () => {
+        if (abortController.signal.aborted === false) {
+            abortController.abort();
+        }
+    });
 
     let onProgress;
     if (body.stream === true) {
@@ -103,7 +110,7 @@ server.post('/conversation', async (request, reply) => {
                 console.debug(token);
             }
             if (token !== '[DONE]') {
-                reply.sse({ id: '', data: token });
+                reply.sse({ id: '', data: JSON.stringify(token) });
             }
         };
     } else {
@@ -130,6 +137,7 @@ server.post('/conversation', async (request, reply) => {
             clientId: body.clientId,
             invocationId: body.invocationId,
             onProgress,
+            abortController,
         });
     } catch (e) {
         error = e;
