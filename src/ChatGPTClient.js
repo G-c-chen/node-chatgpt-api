@@ -197,7 +197,7 @@ export default class ChatGPTClient {
         conversation.messages.push(userMessage);
 
         const prompt = await this.buildPrompt(conversation.messages, userMessage.id);
-
+        // console.log(prompt, 'prompt');
         let reply = '';
         let result = null;
         if (typeof opts.onProgress === 'function') {

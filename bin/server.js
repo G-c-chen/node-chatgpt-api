@@ -45,26 +45,26 @@ if (settings.storageFilePath && !settings.cacheOptions.store) {
 }
 
 const clientToUse = settings.apiOptions?.clientToUse || settings.clientToUse || 'chatgpt';
+// let client;
+// switch (clientToUse) {
+//     case 'bing':
+//         client = new BingAIClient(settings.bingAiClient);
+//         break;
+//     case 'chatgpt-browser':
+//         client = new ChatGPTBrowserClient(
+//             settings.chatGptBrowserClient,
+//             settings.cacheOptions,
+//         );
+//         break;
+//     default:
+//         client = new ChatGPTClient(
+//             settings.openaiApiKey,
+//             settings.chatGptClient,
+//             settings.cacheOptions,
+//         );
+//         break;
+// }
 
-let client;
-switch (clientToUse) {
-    case 'bing':
-        client = new BingAIClient(settings.bingAiClient);
-        break;
-    case 'chatgpt-browser':
-        client = new ChatGPTBrowserClient(
-            settings.chatGptBrowserClient,
-            settings.cacheOptions,
-        );
-        break;
-    default:
-        client = new ChatGPTClient(
-            settings.openaiApiKey,
-            settings.chatGptClient,
-            settings.cacheOptions,
-        );
-        break;
-}
 
 const server = fastify();
 
@@ -72,9 +72,29 @@ await server.register(FastifySSEPlugin);
 await server.register(cors, {
     origin: '*',
 });
-
+let default_key = settings.openaiApiKey
 server.post('/conversation', async (request, reply) => {
     const body = request.body || {};
+    let openaiApiKey = body.api_key;
+    let client;
+    switch (clientToUse) {
+        case 'bing':
+            client = new BingAIClient(settings.bingAiClient);
+            break;
+        case 'chatgpt-browser':
+            client = new ChatGPTBrowserClient(
+                settings.chatGptBrowserClient,
+                settings.cacheOptions,
+            );
+            break;
+        default:
+            client = new ChatGPTClient(
+                openaiApiKey || default_key,
+                settings.chatGptClient,
+                settings.cacheOptions,
+            );
+            break;
+    }
 
     let onProgress;
     if (body.stream === true) {
